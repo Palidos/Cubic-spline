@@ -1,7 +1,8 @@
+/* eslint-disable space-before-function-paren */
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
 const drawN = 1000;
-const scale = 1000;
+const scale = 300;
 const table = document.getElementById('table');
 const halfWidth = canvas.width / 2;
 const halfHeight = canvas.height / 2;
@@ -10,7 +11,7 @@ let Sx = null;
 let h = null;
 let Step = 20;
 
-function drawField () {
+function drawField() {
   // --------------------draw field---------------------------
   ctx.strokeStyle = 'silver';
   for (let i = 0; i < canvas.width; i += 25) {
@@ -19,9 +20,11 @@ function drawField () {
     }
   }
 
-  for (let i = -2; i <= 2; i++) {
-    ctx.fillText(i, halfWidth + i * 100, halfHeight);
-    ctx.fillText(i * 0.1, halfWidth, halfHeight + i * 100);
+  for (let i = -5; i <= 5; i++) {
+    ctx.fillText(i, halfWidth + i * 100, halfHeight - 5);
+    if (i !== 0) {
+      ctx.fillText((i * 0.1).toFixed(1), halfWidth + 5, halfHeight + i * 100);
+    }
   }
 
   ctx.lineWidth = 1;
@@ -41,7 +44,7 @@ window.onload = () => {
 };
 
 class Spline {
-  constructor (a = 0, b = 0, c = 0, d = 0, x = 0, s = 0) {
+  constructor(a = 0, b = 0, c = 0, d = 0, x = 0, s = 0) {
     this.a = a;
     this.b = b;
     this.c = c;
@@ -51,17 +54,15 @@ class Spline {
   }
 }
 
-// eslint-disable-next-line no-unused-vars
-function reset () {
+function reset() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   drawField();
-  const table = document.getElementById('table');
   while (table.firstChild) {
     table.removeChild(table.firstChild);
   }
 }
 
-function init () {
+function init() {
   Sx = new Array(N);
   h = Step;
   for (let i = 0; i < N + 1; i++) {
@@ -70,9 +71,9 @@ function init () {
   }
 }
 
-function sourceFunction (x, draw = 0) {
+function sourceFunction(x, draw = 0) {
   x /= 100;
-  const y = -scale * (Math.sin(Math.pow(x, 3)) + Math.cos(Math.pow(x, 2))) / 7;
+  const y = -scale * (Math.cos(Math.pow(x, 2) / 4));
 
   if (draw && x === Math.round(x)) {
     const div = document.createElement('div');
@@ -82,20 +83,27 @@ function sourceFunction (x, draw = 0) {
   return y;
 }
 
-function findSpline (SxArr, Sx) {
+function findSpline(SxArr, Sx) {
   for (let x = -drawN / 2; x < drawN / 2; x++) {
     const xi = parseInt((x + drawN / 2) / (h)) + 1;
+
     SxArr[x] = Sx[xi].a + Sx[xi].b * (x - Sx[xi].x) + Sx[xi].c * Math.pow((x - Sx[xi].x), 2) / 2 + Sx[xi].d * Math.pow((x - Sx[xi].x), 3) / 6;
+    const xPos = x / 100;
+    if (xPos === Math.round(xPos)) {
+      const div = document.createElement('div');
+      div.textContent = `x=${xPos} y=${(-SxArr[x] / scale).toFixed(2)}`;
+      table.appendChild(div);
+    }
   }
 }
 
-function findA () {
+function findA() {
   for (let i = 0; i < N; i++) {
     Sx[i].a = sourceFunction(Sx[i].x);
   }
 }
 
-function findC () {
+function findC() {
   const alpha = new Array(N);
   const beta = new Array(N);
   alpha[0] = 0;
@@ -113,7 +121,7 @@ function findC () {
   }
 }
 
-function findBD () {
+function findBD() {
   for (let i = N; i > 0; i--) {
     Sx[i].d = (Sx[i].c - Sx[i - 1].c) / h;
     Sx[i].b = h / 2 * Sx[i].c - (Math.pow(h, 2)) / 6 * Sx[i].d + (sourceFunction(Sx[i].x) - sourceFunction(Sx[i - 1].x)) / h;
@@ -121,11 +129,13 @@ function findBD () {
 }
 
 // eslint-disable-next-line no-unused-vars
-function drawSpline () {
+function drawSpline() {
+  reset();
   const input = document.getElementById('input');
   if (parseInt(input.value * 100)) {
     Step = input.value * 100;
     N = parseInt(drawN / Step);
+    if (drawN % N) N++;
   } else {
     input.value = `${Step / 100}`;
   }
@@ -156,14 +166,42 @@ function drawSpline () {
   // ----------------------source-function------------------------------
 
   // - to +
-  ctx.strokeStyle = 'blue';
+  ctx.strokeStyle = 'black';
 
   ctx.moveTo(cx, cy);
   ctx.beginPath();
   for (let i = -drawN; i < drawN; i++) {
     const x = i;
-    const y = sourceFunction(x, 1);
+    const y = sourceFunction(x);
     ctx.lineTo(cx + x, cy + y);
   }
   ctx.stroke();
+  const checkbox = document.getElementById('checkbox');
+  if (checkbox.checked) {
+    findDifferences(SxArr);
+  }
+}
+
+function findDifferences(SxArr) {
+  const cx = halfWidth;
+  const cy = halfHeight;
+  let maxDiff = -1;
+  let maxDiffX = 0;
+  for (let i = -drawN + Step / 2; i < drawN - Step / 2; i += Step) {
+    const x = i;
+    const y1 = sourceFunction(x);
+    const y2 = SxArr[x];
+    ctx.beginPath();
+    if (Math.abs(y1 - y2) > maxDiff) {
+      maxDiff = Math.abs(y1 - y2);
+      maxDiffX = i;
+    }
+    ctx.moveTo(cx + x, cy + y1);
+    ctx.lineTo(cx + x, cy + y2);
+    ctx.strokeStyle = 'magenta';
+    ctx.stroke();
+  }
+  const div = document.createElement('div');
+  div.textContent = `MAX deviation = ${(maxDiff / scale).toFixed(2)} ( x = ${maxDiffX / 100} )`;
+  table.appendChild(div);
 }

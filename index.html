@@ -13,28 +13,41 @@
 <body>
   <div id="appWrapper">
     <div id="inputWrapper">
-      <div class="func">
-        <div id="func-start"> f(x) = </span>
-          <span class="frac">
-            <span>sin(x)+cos(x<sup>2</sup>)</span>
-            <span class="symbol">/</span>
-            <span class="bottom">7</span>
-        </div>
-      </div>
-      <div class="inputs">
-        <!-- <label> Interval:
-          <input id="inputRange" type="text">
-        </label> -->
-        <label>Steps:
-          <input id="inputSteps" type="text">
-        </label>
-        <button id="inputPlot">Calculate</button>
-      </div>
-    </div>
 
-    <div id="plotterWrapper">
-      <span id="plotter"></span>
+      <div class="functionInput left-side-input input">
+        <label> f(x) =
+          <input id="inputFunction" type="text">
+        </label>
+      </div>
+
+      <div class="input">
+        <label>Steps:
+          <input id="inputSteps" type="textf">
+        </label>
+      </div>
+
+      <div class="left-side-input input">
+        <label> Left border:
+          <input id="inputRangeLeft" type="text" placeholder="Left border">
+        </label>
+      </div>
+
+      <div class="input">
+        <label> Right border:
+          <input id="inputRangeRight" type="text" placeholder="Right border">
+        </label>
+      </div>
     </div>
+        <div class="calculate-button">
+          <button id="inputPlot">Calculate</button>
+        </div>
+
+
+  </div>
+
+  <div id="plotterWrapper">
+    <span id="plotter"></span>
+  </div>
 
   </div>
   <script src="script.js"></script>

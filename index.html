@@ -14,39 +14,51 @@
   <div id="appWrapper">
     <div id="inputWrapper">
 
-      <div class="functionInput left-side-input input">
-        <label> f(x) =
-          <input id="inputFunction" type="text">
-        </label>
-      </div>
+      <div class="firstRow">
+        <div class="functionInput left-side-input input">
+          <label> f(x) =
+            <input id="inputFunction" type="text">
+          </label>
+        </div>
 
-      <div class="input">
-        <label>Steps:
-          <input id="inputSteps" type="textf">
-        </label>
-      </div>
+        <div class="input center-input">
+          <label>Steps:
+            <input id="inputSteps" type="text">
+          </label>
+        </div>
 
+        <div class="input inputError">
+          <label>Interpolation error:
+            <input id="inputError" type="text">
+          </label>
+        </div>
+      </div>
+      <div class="secondRow">
       <div class="left-side-input input">
         <label> Left border:
           <input id="inputRangeLeft" type="text" placeholder="Left border">
         </label>
       </div>
 
-      <div class="input">
+      <div class="right-side-input input">
         <label> Right border:
           <input id="inputRangeRight" type="text" placeholder="Right border">
         </label>
       </div>
     </div>
-        <div class="calculate-button">
-          <button id="inputPlot">Calculate</button>
-        </div>
-
-
+    </div>
+    <div class="calculate-button">
+      <button id="inputPlot">Calculate</button>
+    </div>
   </div>
 
-  <div id="plotterWrapper">
-    <span id="plotter"></span>
+  <div class="content">
+    <p id="interpError">Interpolation error:</p>
+    <table id="spline-coefficient"></table>
+
+    <div id="plotterWrapper">
+      <span id="plotter"></span>
+    </div>
   </div>
 
   </div>

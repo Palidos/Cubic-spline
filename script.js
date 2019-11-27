@@ -4,6 +4,8 @@ const inpRangeLeft = document.getElementById('inputRangeLeft');
 const inpRangeRight = document.getElementById('inputRangeRight');
 const inpSteps = document.getElementById('inputSteps');
 const inpPlot = document.getElementById('inputPlot');
+const splineTable = document.getElementById('spline-coefficient');
+const interpErrorP = document.getElementById('interpError');
 
 let funcOptions = {
   target: '#plotter',
@@ -27,17 +29,18 @@ function displayFunc(func) {
     Array.from(document.getElementsByClassName('func')).map(elem => {
       elem.remove();
     });
-  } else {
-    const appWrapper = document.getElementById('appWrapper');
-    const inputWrapper = document.getElementById('inputWrapper');
-    const funcDiv = document.createElement('div');
-    funcDiv.setAttribute('class', 'func');
-    funcDiv.innerHTML = `f(x) = ${func}`;
-    appWrapper.insertBefore(funcDiv, inputWrapper);
   }
+  const appWrapper = document.getElementById('appWrapper');
+  const inputWrapper = document.getElementById('inputWrapper');
+  const funcDiv = document.createElement('div');
+  funcDiv.setAttribute('class', 'func');
+  funcDiv.innerHTML = `f(x) = ${func}`;
+  appWrapper.insertBefore(funcDiv, inputWrapper);
 }
 
 inpPlot.addEventListener('click', () => {
+  splineTable.innerHTML = null;
+  interpErrorP.innerHTML = 'Interpolation error:';
   let func = inpFunc.value ? inpFunc.value : '(sin(x)+cos(x^2))/7';
   let xRange = [];
   inpRangeLeft.value ? xRange.push(+inpRangeLeft.value) : xRange.push(-10);
@@ -77,7 +80,6 @@ inpPlot.addEventListener('click', () => {
     alpha.push(-1 / (4 + alpha[i - 1]));
     beta.push(1 / (4 + alpha[i - 1]) * (6 / (h * h) * (f[i + 1] - 2 * f[i] + f[i - 1]) - beta[i - 1]));
   }
-
   for (let i = n - 2; i > 0; i--) {
     splines[i].c = alpha[i] * splines[i + 1].c + beta[i];
   }
@@ -110,8 +112,54 @@ inpPlot.addEventListener('click', () => {
   let xDif = xRange[1] - xRange[0];
   let yDif = yMax - yMin;
 
+  const interpError = Math.max(
+    ...dots
+      .map(dot => {
+        return Math.max(...f.map(point => dot[1] - point).flat(Infinity));
+      })
+      .flat(Infinity)
+  );
+
+  interpErrorP.innerHTML += ` ${interpError}`;
+
   funcOptions.xAxis.domain = [ xRange[0] - xDif * 0.1, xRange[1] + xDif * 0.1 ];
   funcOptions.yAxis.domain = [ yMin - yDif * 0.1, yMax + yDif * 0.1 ];
   displayFunc(func);
   functionPlot(funcOptions);
+
+  const thead = document.createElement('thead');
+  const headerRow = thead.insertRow();
+  const headers = Object.keys(splines[Math.round(splines.length / 2)]).sort();
+  const thPoints = document.createElement('th');
+  const pointNumber = document.createTextNode('Point');
+  thPoints.appendChild(pointNumber);
+  headerRow.appendChild(thPoints);
+  for (const key of headers) {
+    const th = document.createElement('th');
+    const text = document.createTextNode(key);
+    th.appendChild(text);
+    headerRow.appendChild(th);
+  }
+  const tbody = document.createElement('tbody');
+  splines.map((point, index) => {
+    const row = tbody.insertRow();
+    const pointNumberCell = row.insertCell();
+    const pointNumberText = document.createTextNode(index);
+    pointNumberCell.appendChild(pointNumberText);
+    for (key of headers) {
+      let cell = row.insertCell();
+      let text = document.createTextNode(point[key] ? point[key].toFixed(5) : '0.00000');
+      cell.appendChild(text);
+    }
+  });
+
+  splineTable.append(thead);
+  splineTable.append(tbody);
+});
+
+inpSteps.addEventListener('keyup', e => {
+  if (e.keyCode === 13) {
+    e.preventDefault();
+    inpPlot.click();
+  }
 });

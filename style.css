@@ -1,19 +1,23 @@
 #appWrapper {
-  position: relative;
-  width: 1000px;
-  margin: auto;
   padding: 10px;
+  font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
 }
 
 #inputWrapper {
+  width: 50%;
+  margin: 20px 0;
+  line-height: 30px;
+  margin: 20px auto;
+}
+
+.firstRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1.3fr;
+}
+
+.secondRow {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  justify-content: center;
-  margin-top: 20px;
-
-  margin: 10px;
-  line-height: 30px;
-  padding-bottom: 10px;
 }
 
 #inputPlot {
@@ -33,9 +37,7 @@
 }
 
 #plotterWrapper {
-  display: flex;
-  justify-content: center;
-  padding: 0 45px;
+  margin-left: 30px;
 }
 
 .func {
@@ -48,11 +50,46 @@
 }
 
 .left-side-input {
-justify-self: end;
-margin-right: 20px;
+  justify-self: end;
+  /* margin-right: 20px; */
+}
+
+#inputRangeLeft {
+  margin-right: 30px;
+}
+
+.center-input {
+  justify-self: center;
 }
 
 .calculate-button {
   display: flex;
   justify-content: center;
+}
+
+#spline-coefficient {
+  margin-left: 20px;
+  border-collapse: collapse;
+}
+
+#spline-coefficient tr:nth-child(2n) {
+  background-color: #f2f2f2;
+}
+
+#spline-coefficient th {
+  padding-top: 12px;
+  padding-bottom: 12px;
+  text-align: left;
+  background-color: rgb(120, 124, 120);
+  color: white;
+}
+
+#spline-coefficient td,
+#spline-coefficient th {
+  border: 1px solid #ddd;
+  padding: 8px;
+}
+
+.content {
+  display: flex;
 }

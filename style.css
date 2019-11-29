@@ -37,6 +37,7 @@
 }
 
 #plotterWrapper {
+  display: none;
   margin-left: 30px;
 }
 

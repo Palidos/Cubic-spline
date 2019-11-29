@@ -5,7 +5,12 @@ const inpRangeRight = document.getElementById('inputRangeRight');
 const inpSteps = document.getElementById('inputSteps');
 const inpPlot = document.getElementById('inputPlot');
 const splineTable = document.getElementById('spline-coefficient');
-const interpErrorP = document.getElementById('interpError');
+// const interpErrorP = document.getElementById('interpError');
+const inputError = document.getElementById('inputError');
+const plotterWrapper = document.getElementById('plotterWrapper');
+
+let interpError = null;
+let splines = [];
 
 let funcOptions = {
   target: '#plotter',
@@ -21,6 +26,14 @@ let funcOptions = {
   },
   data: [],
 };
+
+// function funct(argument) {
+//   return Math.sin(argument) / Math.cos(argument**2) / 7;
+// }
+
+function funct(argument) {
+  return argument * Math.sin(argument) / (1 + argument ** 2);
+}
 
 functionPlot(funcOptions);
 
@@ -39,14 +52,14 @@ function displayFunc(func) {
 }
 
 inpPlot.addEventListener('click', () => {
+  plotterWrapper.style.display = 'block';
   splineTable.innerHTML = null;
-  interpErrorP.innerHTML = 'Interpolation error:';
+  // interpErrorP.innerHTML = 'Interpolation error:';
   let func = inpFunc.value ? inpFunc.value : '(sin(x)+cos(x^2))/7';
   let xRange = [];
   inpRangeLeft.value ? xRange.push(+inpRangeLeft.value) : xRange.push(-10);
   inpRangeRight.value ? xRange.push(+inpRangeRight.value) : xRange.push(10);
-  let steps = [];
-  steps.push(inpSteps.value);
+  let steps = inpSteps.value ? +inpSteps.value : 2;
 
   functionPlot(funcOptions);
   funcOptions.data = [
@@ -61,72 +74,105 @@ inpPlot.addEventListener('click', () => {
   let yMax = -Infinity,
     yMin = Infinity;
 
-  let n = +steps[0];
-  let splines = [];
-  let h = (r - l) / (n - 1);
-  let f = [];
-  for (let i = 0; i < n; i++) {
-    splines.push({ x: l + i * h });
-    f.push(math.evaluate(func, { x: splines[i].x }));
-    splines[i].a = f[i];
-  }
+  let n = steps;
+  do {
+    funcOptions = {
+      target: '#plotter',
+      width: 1100,
+      height: 600,
+      grid: true,
+      xAxis: {
+        label: 'x',
+        domain: [ -6, 6 ],
+      },
+      yAxis: {
+        label: 'y',
+      },
+      data: [],
+    };
 
-  let alpha = [ 0 ],
-    beta = [ 0 ];
-  splines[0].c = 0;
-  splines[n - 1].c = 0;
+    funcOptions.data = [
+      {
+        fn: func,
+        range: xRange,
+        color: 'black',
+      },
+    ];
 
-  for (let i = 1; i < n - 1; i++) {
-    alpha.push(-1 / (4 + alpha[i - 1]));
-    beta.push(1 / (4 + alpha[i - 1]) * (6 / (h * h) * (f[i + 1] - 2 * f[i] + f[i - 1]) - beta[i - 1]));
-  }
-  for (let i = n - 2; i > 0; i--) {
-    splines[i].c = alpha[i] * splines[i + 1].c + beta[i];
-  }
-
-  for (let i = n - 1; i > 0; i--) {
-    splines[i].d = (splines[i].c - splines[i - 1].c) / h;
-    splines[i].b = h / 2 * splines[i].c - h * h / 6 * splines[i].d + (f[i] - f[i - 1]) / h;
-  }
-
-  let dots = [],
-    epsilon = (xRange[1] - xRange[0]) / 30000;
-  for (let i = 1; i < splines.length; i++) {
-    let dx, curVal;
-    for (let x = splines[i - 1].x; x <= splines[i].x; x += epsilon) {
-      dx = x - splines[i].x;
-      curVal = splines[i].a + splines[i].b * dx + splines[i].c / 2 * dx * dx + splines[i].d / 6 * dx * dx * dx;
-      dots.push([ x, curVal ]);
-      yMax = Math.max(yMax, curVal);
-      yMin = Math.min(yMin, curVal);
+    splines = [];
+    let h = (r - l) / (n - 1);
+    let f = [];
+    for (let i = 0; i < n; i++) {
+      splines.push({ x: l + i * h });
+      f.push(math.evaluate(func, { x: splines[i].x }));
+      splines[i].a = f[i];
     }
-  }
+    let alpha = [ 0 ],
+      beta = [ 0 ];
+    splines[0].c = 0;
+    splines[n - 1].c = 0;
 
-  funcOptions.data.push({
-    points: dots,
-    fnType: 'points',
-    graphType: 'polyline',
-    color: 'red',
-  });
+    for (let i = 1; i < n - 1; i++) {
+      alpha.push(-1 / (4 + alpha[i - 1]));
+      beta.push(1 / (4 + alpha[i - 1]) * (6 / (h * h) * (f[i + 1] - 2 * f[i] + f[i - 1]) - beta[i - 1]));
+    }
+    for (let i = n - 2; i > 0; i--) {
+      splines[i].c = alpha[i] * splines[i + 1].c + beta[i];
+    }
 
-  let xDif = xRange[1] - xRange[0];
-  let yDif = yMax - yMin;
+    for (let i = n - 1; i > 0; i--) {
+      splines[i].d = (splines[i].c - splines[i - 1].c) / h;
+      splines[i].b = h / 2 * splines[i].c - h * h / 6 * splines[i].d + (f[i] - f[i - 1]) / h;
+    }
+    let args = [];
+    let dots = [];
+    let res = [],
+      epsilon = (xRange[1] - xRange[0]) / 30000;
+    for (let i = 1; i < splines.length; i++) {
+      let dx, curVal;
+      for (let x = splines[i - 1].x; x <= splines[i].x; x += epsilon) {
+        dx = x - splines[i].x;
+        curVal = splines[i].a + splines[i].b * dx + splines[i].c / 2 * dx * dx + splines[i].d / 6 * dx * dx * dx;
+        dots.push([ x, curVal ]);
+        res.push(curVal);
+        args.push(x);
+        yMax = Math.max(yMax, curVal);
+        yMin = Math.min(yMin, curVal);
+      }
+    }
 
-  const interpError = Math.max(
-    ...dots
-      .map(dot => {
-        return Math.max(...f.map(point => dot[1] - point).flat(Infinity));
-      })
-      .flat(Infinity)
-  );
+    funcOptions.data.push({
+      points: dots,
+      fnType: 'points',
+      graphType: 'polyline',
+      color: 'red',
+    });
 
-  interpErrorP.innerHTML += ` ${interpError}`;
+    let xDif = xRange[1] - xRange[0];
+    let yDif = yMax - yMin;
 
-  funcOptions.xAxis.domain = [ xRange[0] - xDif * 0.1, xRange[1] + xDif * 0.1 ];
-  funcOptions.yAxis.domain = [ yMin - yDif * 0.1, yMax + yDif * 0.1 ];
+    funcOptions.xAxis.domain = [ xRange[0] - xDif * 0.1, xRange[1] + xDif * 0.1 ];
+    funcOptions.yAxis.domain = [ yMin - yDif * 0.1, yMax + yDif * 0.1 ];
+
+    if (inputError.value) {
+      n++;
+    }
+
+    let tmp = [];
+    for (let i = 0; i < args.length; i++) {
+      tmp.push(funct(args[i]) - res[i]);
+    }
+    interpError = Math.max(...tmp);
+
+    console.log('Interpolation error: ',interpError);
+
+    // interpError = Math.max(...res.map((r,i) => tmp[i] - r));
+    // console.log(n);
+  } while (inputError.value ? interpError.toFixed(1) != +inputError.value : false);
   displayFunc(func);
   functionPlot(funcOptions);
 
+  // interpErrorP.innerHTML += ` ${interpError.toFixed(5)}`;
   const thead = document.createElement('thead');
   const headerRow = thead.insertRow();
   const headers = Object.keys(splines[Math.round(splines.length / 2)]).sort();

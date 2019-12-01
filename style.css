@@ -38,7 +38,12 @@
 
 #plotterWrapper {
   display: none;
-  margin-left: 30px;
+  padding: 30px 0 0 30px;
+  /* margin-left: 30px; */
+}
+
+#plotterWrapper text:not(.top-right-legend) {
+  text-anchor: unset !important;
 }
 
 .func {
@@ -93,4 +98,5 @@
 
 .content {
   display: flex;
+  justify-content: center;
 }

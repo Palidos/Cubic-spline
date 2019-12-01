@@ -12,7 +12,8 @@
 
 .firstRow {
   display: grid;
-  grid-template-columns: 1fr 1fr 1.3fr;
+  grid-template-columns: 1fr 1fr ;
+  /* grid-template-columns: 1fr 1fr 1.3fr; */
 }
 
 .secondRow {
@@ -58,12 +59,17 @@
   justify-self: end;
 }
 
+.functionInput {
+  margin-right: 30px;
+}
+
 #inputRangeLeft {
   margin-right: 30px;
 }
 
 .center-input {
-  justify-self: center;
+  justify-self: start;
+  /* justify-self: center; */
 }
 
 .calculate-button {

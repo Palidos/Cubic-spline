@@ -13,7 +13,7 @@ let splines = [];
 let funcOptions = {
   target: '#plotter',
   width: 1100,
-  height: 700,
+  height: 600,
   grid: true,
   xAxis: {
     label: 'x',
@@ -37,7 +37,14 @@ function displayFunc(func) {
   const inputWrapper = document.getElementById('inputWrapper');
   const funcDiv = document.createElement('div');
   funcDiv.setAttribute('class', 'func');
-  funcDiv.innerHTML = `f(x) = ${func}`;
+  funcDiv.innerHTML = inpFunc.value
+    ? `f(x) = ${func}`
+    : `<span id="func-start"> f(x) = </span>
+      <div class="frac">
+        <span>(sin(x) + cos(x<sup>2</sup>))</span>
+        <span class="symbol">/</span>
+        <span class="bottom">7</span>
+      </div>`;
   appWrapper.insertBefore(funcDiv, inputWrapper);
 }
 
@@ -105,7 +112,6 @@ inpPlot.addEventListener('click', () => {
       interpError = Math.max(Math.abs(curVal - math.evaluate(func, { x: x })), precision);
     }
   }
-  console.log(splines);
 
   funcOptions.data.push({
     points: dots,

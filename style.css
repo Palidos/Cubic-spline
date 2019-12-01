@@ -38,8 +38,7 @@
 
 #plotterWrapper {
   display: none;
-  padding: 30px 0 0 30px;
-  /* margin-left: 30px; */
+  padding: 0 0 0 30px;
 }
 
 #plotterWrapper text:not(.top-right-legend) {
@@ -57,7 +56,6 @@
 
 .left-side-input {
   justify-self: end;
-  /* margin-right: 20px; */
 }
 
 #inputRangeLeft {
@@ -97,6 +95,30 @@
 }
 
 .content {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr 5fr;
   justify-content: center;
+}
+
+
+.frac {
+  display: inline-block;
+  position: relative;
+  vertical-align: middle;
+  letter-spacing: 0.001em;
+  text-align: center;
+}
+.frac > span {
+  display: block;
+  padding: 0.1em;
+}
+.frac span.bottom {
+  border-top: thin solid #000000;
+}
+.frac span.symbol {
+  display: none;
+} 
+#func-start {
+  margin: auto 0;
+  margin-right: 10px;
 }
